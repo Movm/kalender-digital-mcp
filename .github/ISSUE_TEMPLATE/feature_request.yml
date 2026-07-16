@@ -1,0 +1,15 @@
+name: Funktionswunsch
+description: Verbesserung für Server oder Entwicklerworkflow vorschlagen
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Anwendungsfall
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Lösungsvorschlag

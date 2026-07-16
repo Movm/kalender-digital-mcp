@@ -26,9 +26,18 @@
   ],
   "author": "Moritz Waechter",
   "license": "MIT",
+  "packageManager": "pnpm@10.0.0",
   "engines": {
     "node": ">=20"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Movm/kalender-digital-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Movm/kalender-digital-mcp/issues"
+  },
+  "homepage": "https://github.com/Movm/kalender-digital-mcp#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
     "express": "^5.2.1",

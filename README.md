@@ -1,5 +1,9 @@
 # kalender.digital MCP Server
 
+[![CI](https://github.com/Movm/kalender-digital-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/Movm/kalender-digital-mcp/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](https://nodejs.org/)
+
 Ein kleiner MCP-Server für die offizielle [kalender.digital API](https://kalender.digital/c/documentation/api?lang=de). Er stellt Termine und Unterkalender als klar getrennte MCP-Tools bereit.
 
 ## Funktionen
@@ -52,14 +56,29 @@ Beispiel für eine MCP-Client-Konfiguration:
 ```bash
 KALENDER_DIGITAL_API_KEY="dein-api-key" \
 MCP_TRANSPORT=http \
+MCP_API_KEY="ein-langes-zufälliges-secret" \
 MCP_ALLOWED_ORIGINS="https://claude.ai,https://chatgpt.com" \
 PORT=3000 \
 pnpm start
 ```
 
-Der MCP-Endpunkt liegt unter `http://localhost:3000/mcp`, der Health-Check unter `/health`. Requests ohne `Origin` (typische Server-zu-Server-MCP-Clients) sind erlaubt. Browser-Origins müssen explizit in `MCP_ALLOWED_ORIGINS` stehen.
+Der MCP-Endpunkt liegt unter `http://localhost:3000/mcp`, der Health-Check unter `/health`. Requests ohne `Origin` (typische Server-zu-Server-MCP-Clients) sind erlaubt. Browser-Origins müssen explizit in `MCP_ALLOWED_ORIGINS` stehen. `MCP_API_KEY` wird als `Authorization: Bearer …` oder `X-API-Key` gesendet.
 
-> Der HTTP-Modus verwendet einen gemeinsamen kalender.digital API-Key für alle Nutzer. Für einen öffentlichen Mehrnutzer-Dienst sollte davor eine eigene Authentifizierung ergänzt werden.
+> Der HTTP-Modus verwendet einen gemeinsamen kalender.digital API-Key für alle Nutzer. Setze bei jeder Internet-Bereitstellung `MCP_API_KEY` und HTTPS. Origin-Filterung allein ist keine Authentifizierung.
+
+## Docker / Coolify
+
+```bash
+docker build -t kalender-digital-mcp .
+docker run --rm -p 3000:3000 \
+  -e KALENDER_DIGITAL_API_KEY=your-api-key \
+  -e MCP_API_KEY=your-private-mcp-key \
+  kalender-digital-mcp
+```
+
+Coolify kann das enthaltene `Dockerfile` direkt bauen. Exponiere Port `3000`,
+verwende `/health` als Healthcheck und speichere beide Schlüssel ausschließlich
+als Runtime-Secrets.
 
 ## Tools
 
@@ -83,6 +102,11 @@ pnpm test
 pnpm check
 pnpm build
 ```
+
+Der vollständige Workflow und die Pull-Request-Checkliste stehen in
+[CONTRIBUTING.md](CONTRIBUTING.md). Sicherheitslücken bitte privat über eine
+[GitHub Security Advisory](https://github.com/Movm/kalender-digital-mcp/security/advisories/new)
+melden.
 
 ## Lizenz
 

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Sicherheitslücke
+    url: https://github.com/Movm/kalender-digital-mcp/security/advisories/new
+    about: Bitte privat melden
+  - name: kalender.digital API-Dokumentation
+    url: https://kalender.digital/c/documentation/api?lang=de
+    about: Upstream-API und Premium-Voraussetzungen
