@@ -22,12 +22,27 @@ export interface ListEventsInput {
   query?: string;
 }
 
+/** Hints for the failure codes the API sends as `{ success: false, msg }`. */
+const FAILURE_HINTS: Record<string, string> = {
+  FAILURE_INVALID_API_KEY: "the API key is invalid or the calendar has no Premium API access",
+  FAILURE_API_KEY_MISSING: "no API key was sent",
+};
+
+function failureCode(body: unknown): string | null {
+  if (typeof body !== "object" || body === null) return null;
+  const msg = (body as { msg?: unknown }).msg;
+  return typeof msg === "string" && /^[A-Z0-9_]{1,80}$/.test(msg) ? msg : null;
+}
+
 export class CalendarDigitalApiError extends Error {
   constructor(
     public readonly status: number,
     public readonly responseBody: unknown,
   ) {
-    super(`kalender.digital API request failed with status ${status}`);
+    const code = failureCode(responseBody);
+    const hint = code ? FAILURE_HINTS[code] : undefined;
+    const detail = code ? `: ${code}${hint ? ` (${hint})` : ""}` : "";
+    super(`kalender.digital API request failed with status ${status}${detail}`);
     this.name = "CalendarDigitalApiError";
   }
 }
@@ -72,28 +87,6 @@ export class CalendarDigitalClient {
 
   updateEvent(eventId: string, event: CalendarEventInput, signal?: AbortSignal): Promise<unknown> {
     return this.request(`/event/${encodeURIComponent(eventId)}`, this.jsonRequest("PUT", event, signal));
-  }
-
-  deleteEvent(eventId: string, signal?: AbortSignal): Promise<unknown> {
-    return this.request(`/event/${encodeURIComponent(eventId)}`, { method: "DELETE", signal });
-  }
-
-  createSubcalendar(name: string, signal?: AbortSignal): Promise<unknown> {
-    return this.request("/subcalendar", this.jsonRequest("POST", { name }, signal));
-  }
-
-  updateSubcalendar(subcalendarId: string, name: string, signal?: AbortSignal): Promise<unknown> {
-    return this.request(
-      `/subcalendar/${encodeURIComponent(subcalendarId)}`,
-      this.jsonRequest("POST", { name }, signal),
-    );
-  }
-
-  deleteSubcalendar(subcalendarId: string, signal?: AbortSignal): Promise<unknown> {
-    return this.request(`/subcalendar/${encodeURIComponent(subcalendarId)}`, {
-      method: "DELETE",
-      signal,
-    });
   }
 
   private jsonRequest(method: "POST" | "PUT", body: unknown, signal?: AbortSignal): RequestInit {

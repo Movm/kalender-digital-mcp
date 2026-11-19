@@ -64,24 +64,9 @@ describe("CalendarDigitalClient", () => {
     });
   });
 
-  it("uses POST for subcalendar updates as documented", async () => {
-    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse({ ok: true }));
-    const client = new CalendarDigitalClient("secret", {
-      baseUrl: "https://example.test/public",
-      fetchImpl,
-    });
-
-    await client.updateSubcalendar("sub-1", "Renamed");
-
-    const [url, init] = fetchImpl.mock.calls[0];
-    expect(url).toBe("https://example.test/public/subcalendar/sub-1");
-    expect(init?.method).toBe("POST");
-    expect(init?.body).toBe(JSON.stringify({ name: "Renamed" }));
-  });
-
   it("returns a clear error when no API key is configured", async () => {
     const client = new CalendarDigitalClient("");
-    await expect(client.deleteEvent("event-1")).rejects.toThrow(
+    await expect(client.getEvent("event-1", "Europe/Berlin")).rejects.toThrow(
       "KALENDER_DIGITAL_API_KEY is not configured",
     );
   });
@@ -93,8 +78,28 @@ describe("CalendarDigitalClient", () => {
       fetchImpl,
     });
 
-    const error = await client.deleteEvent("event-1").catch((caught) => caught);
+    const error = await client.getEvent("event-1", "Europe/Berlin").catch((caught) => caught);
     expect(error).toBeInstanceOf(CalendarDigitalApiError);
     expect(error).toMatchObject({ status: 403, responseBody: { message: "Forbidden" } });
+  });
+
+  it("names the API's failure code, e.g. an invalid key, in the error message", async () => {
+    const fetchImpl = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(jsonResponse({ success: false, msg: "FAILURE_INVALID_API_KEY" }, 400));
+    const client = new CalendarDigitalClient("bad-key", { baseUrl: "https://example.test/public", fetchImpl });
+
+    const error = await client.getEvent("event-1", "Europe/Berlin").catch((caught) => caught);
+    expect(error.message).toBe(
+      "kalender.digital API request failed with status 400: FAILURE_INVALID_API_KEY (the API key is invalid or the calendar has no Premium API access)",
+    );
+    expect(error.message).not.toContain("bad-key");
+  });
+
+  it("offers no way to delete events or manage subcalendars", () => {
+    const client = new CalendarDigitalClient("secret") as unknown as Record<string, unknown>;
+    for (const method of ["deleteEvent", "createSubcalendar", "updateSubcalendar", "deleteSubcalendar"]) {
+      expect(client[method]).toBeUndefined();
+    }
   });
 });
