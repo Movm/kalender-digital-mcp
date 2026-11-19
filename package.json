@@ -26,6 +26,7 @@
   ],
   "author": "Moritz Waechter",
   "license": "MIT",
+  "packageManager": "pnpm@10.34.5",
   "engines": {
     "node": ">=20"
   },
