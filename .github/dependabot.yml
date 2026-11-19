@@ -4,8 +4,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: "daily"
       time: "04:00"
       timezone: "Europe/Berlin"
     open-pull-requests-limit: 5
@@ -34,3 +33,15 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "04:20"
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: "node"
+        update-types:
+          - "version-update:semver-major"
