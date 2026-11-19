@@ -29,10 +29,6 @@ describe("kalender.digital MCP server", () => {
       "get_event",
       "create_event",
       "update_event",
-      "delete_event",
-      "create_subcalendar",
-      "update_subcalendar",
-      "delete_subcalendar",
     ]);
     expect(tools.every((tool) => Boolean(tool.title))).toBe(true);
     expect(tools.every((tool) => tool.annotations?.openWorldHint === true)).toBe(true);
@@ -40,7 +36,7 @@ describe("kalender.digital MCP server", () => {
       readOnlyHint: true,
       destructiveHint: false,
     });
-    expect(tools.find((tool) => tool.name === "delete_event")?.annotations).toMatchObject({
+    expect(tools.find((tool) => tool.name === "update_event")?.annotations).toMatchObject({
       readOnlyHint: false,
       destructiveHint: true,
     });

@@ -11,7 +11,6 @@ const dateTime = z
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).describe("Date formatted as YYYY-MM-DD");
 const timeZone = z.string().min(1).default("Europe/Berlin").describe("IANA time zone name");
 const eventId = z.string().min(1).describe("kalender.digital event ID");
-const subcalendarId = z.string().min(1).describe("kalender.digital subcalendar ID");
 
 const eventFields = {
   startDate: dateTime,
@@ -128,74 +127,6 @@ export function createMcpServer(client = new CalendarDigitalClient()): McpServer
     },
     async ({ eventId: id, ...event }, extra) =>
       safeCall(() => client.updateEvent(id, event as CalendarEventInput, extra.signal)),
-  );
-
-  server.registerTool(
-    "delete_event",
-    {
-      title: "Delete calendar event",
-      description: `Permanently delete a kalender.digital event by ID. API documentation: ${API_DOCS_URL}`,
-      inputSchema: { eventId },
-      annotations: {
-        readOnlyHint: false,
-        destructiveHint: true,
-        idempotentHint: true,
-        openWorldHint: true,
-      },
-    },
-    async ({ eventId: id }, extra) => safeCall(() => client.deleteEvent(id, extra.signal)),
-  );
-
-  server.registerTool(
-    "create_subcalendar",
-    {
-      title: "Create subcalendar",
-      description: `Create a kalender.digital subcalendar. API documentation: ${API_DOCS_URL}`,
-      inputSchema: { name: z.string().min(1).describe("Name of the new subcalendar") },
-      annotations: {
-        readOnlyHint: false,
-        destructiveHint: false,
-        idempotentHint: false,
-        openWorldHint: true,
-      },
-    },
-    async ({ name }, extra) => safeCall(() => client.createSubcalendar(name, extra.signal)),
-  );
-
-  server.registerTool(
-    "update_subcalendar",
-    {
-      title: "Update subcalendar",
-      description: `Rename an existing kalender.digital subcalendar. API documentation: ${API_DOCS_URL}`,
-      inputSchema: {
-        subcalendarId,
-        name: z.string().min(1).describe("New subcalendar name"),
-      },
-      annotations: {
-        readOnlyHint: false,
-        destructiveHint: true,
-        idempotentHint: true,
-        openWorldHint: true,
-      },
-    },
-    async ({ subcalendarId: id, name }, extra) =>
-      safeCall(() => client.updateSubcalendar(id, name, extra.signal)),
-  );
-
-  server.registerTool(
-    "delete_subcalendar",
-    {
-      title: "Delete subcalendar",
-      description: `Permanently delete a kalender.digital subcalendar. API documentation: ${API_DOCS_URL}`,
-      inputSchema: { subcalendarId },
-      annotations: {
-        readOnlyHint: false,
-        destructiveHint: true,
-        idempotentHint: true,
-        openWorldHint: true,
-      },
-    },
-    async ({ subcalendarId: id }, extra) => safeCall(() => client.deleteSubcalendar(id, extra.signal)),
   );
 
   return server;

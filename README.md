@@ -5,10 +5,10 @@ Ein kleiner MCP-Server für die offizielle [kalender.digital API](https://kalend
 ## Funktionen
 
 - Termine auflisten und einzeln abrufen
-- Termine erstellen, vollständig ändern und löschen
-- Unterkalender erstellen, umbenennen und löschen
+- Termine erstellen und vollständig ändern
+- **Kein Löschen:** Termine und Unterkalender lassen sich über diesen Server weder löschen noch verwalten
 - Lokal über `stdio` oder als Streamable-HTTP-Server nutzbar
-- API-Key ausschließlich über eine Umgebungsvariable
+- Im HTTP-Modus bringt jede Anfrage ihren eigenen API-Key mit; der Server speichert keinen
 
 Die kalender.digital API ist laut Anbieter Teil der Premium-Version.
 
@@ -59,7 +59,23 @@ pnpm start
 
 Der MCP-Endpunkt liegt unter `http://localhost:3000/mcp`, der Health-Check unter `/health`. Requests ohne `Origin` (typische Server-zu-Server-MCP-Clients) sind erlaubt. Browser-Origins müssen explizit in `MCP_ALLOWED_ORIGINS` stehen.
 
-> Der HTTP-Modus verwendet einen gemeinsamen kalender.digital API-Key für alle Nutzer. Für einen öffentlichen Mehrnutzer-Dienst sollte davor eine eigene Authentifizierung ergänzt werden.
+### Ein Key pro Anfrage
+
+Im HTTP-Modus liest der Server den kalender.digital API-Key aus jeder Anfrage:
+
+- Header `X-API-KEY: <key>` oder
+- Header `Authorization: Bearer <key>`
+
+Fehlt beides, antwortet `/mcp` mit `401`. `KALENDER_DIGITAL_API_KEY` ist im HTTP-Modus nur ein Rückfall für den Einzelbetrieb; für einen Dienst, den mehrere Personen mit ihren eigenen Kalendern nutzen, bleibt die Variable leer. Der Server speichert und protokolliert keine Keys.
+
+### Docker
+
+```bash
+docker build -t kalender-digital-mcp .
+docker run -p 3000:3000 kalender-digital-mcp
+```
+
+Das Image startet im HTTP-Modus und hat einen Health-Check auf `/health`.
 
 ## Tools
 
@@ -69,10 +85,6 @@ Der MCP-Endpunkt liegt unter `http://localhost:3000/mcp`, der Health-Check unter
 | `get_event` | Einzelnen Termin abrufen |
 | `create_event` | Termin erstellen |
 | `update_event` | Termin vollständig ändern |
-| `delete_event` | Termin löschen |
-| `create_subcalendar` | Unterkalender erstellen |
-| `update_subcalendar` | Unterkalender umbenennen |
-| `delete_subcalendar` | Unterkalender löschen |
 
 Webhooks werden in kalender.digital selbst eingerichtet und sind deshalb kein MCP-Tool.
 
